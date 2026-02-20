@@ -52,5 +52,9 @@ func main() {
 		- How they work
 			- rand uses a seed value to generate random numbers
 			- crypto/rand uses a seed value and a source of entropy to generate random numbers
+
+		- When to use which
+			- rand is suitable for non-cryptographic use
+			- crypto/rand is suitable for cryptographic use
 	*/
 }
