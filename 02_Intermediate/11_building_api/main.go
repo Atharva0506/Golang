@@ -46,16 +46,41 @@ func createCourseHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprintf(w, "Course '%s' successfully created!", newCourse.Title)
 }
+
+// 3. Dynamic Path Variables ({id}) and Query Parameters (?key=value)
+func getCourseByIDHandler(w http.ResponseWriter, r *http.Request) {
+	// 1. Path Variables: Use Go 1.22's r.PathValue to extract the {id} from the URL!
+	id := r.PathValue("id")
+
+	// 2. Query Parameters: Use r.URL.Query().Get() to read ?discount=true
+	discount := r.URL.Query().Get("discount")
+
+	w.Header().Set("Content-Type", "application/json")
+
+	// Print a fake JSON string so we can see the variables at work!
+	fmt.Fprintf(w, `{"message": "Fetching course ID: %s", "discount_requested": "%s"}`+"\n", id, discount)
+}
+
+// 4. DELETE Request using the Path Variable!
+func deleteCourseHandler(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	fmt.Fprintf(w, "Course %s successfully deleted!\n", id)
+}
 func main() {
 	// 3. Routing HTTP Methods (A massive new feature in Go 1.22+)
 	// You just put the HTTP Method right before the path!
 	http.HandleFunc("GET /courses", getCourseHandler)
 	http.HandleFunc("POST /courses", createCourseHandler)
 
-	fmt.Println("Server running on port 8080. Try:")
-	fmt.Println("  [GET] http://localhost:8080/courses")
-	fmt.Println("  [POST] http://localhost:8080/courses")
+	// Handling Dynamic Paths with {id} syntax
+	http.HandleFunc("GET /courses/{id}", getCourseByIDHandler)
+	http.HandleFunc("DELETE /courses/{id}", deleteCourseHandler)
 
+	fmt.Println("Server running on port 8080. Try:")
+	fmt.Println("  [GET]    http://localhost:8080/courses")
+	fmt.Println("  [POST]   http://localhost:8080/courses")
+	fmt.Println("  [GET]    http://localhost:8080/courses/123?discount=true")
+	fmt.Println("  [DELETE] http://localhost:8080/courses/123")
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Println("Server Crashed", err)
