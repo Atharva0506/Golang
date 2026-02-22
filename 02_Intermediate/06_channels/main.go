@@ -51,6 +51,8 @@ func main() {
 
 	msg3 := <-priceChan // Freezes until the SLOWEST one (Amazon) finishes in 3 sec
 	fmt.Println(msg3)
-
-	fmt.Println("All APIs finished! Program exiting instantly.")
+	// ERROR CODE
+	// msg4 := <-priceChan // Freezes until the SLOWEST one (Amazon) finishes in 3 sec
+	// fmt.Println(msg4)
+	// fmt.Println("All APIs finished! Program exiting instantly.")
 }
