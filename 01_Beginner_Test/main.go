@@ -67,6 +67,22 @@ func ClassifyScores(scores []int) map[string]int {
 	}
 
 }
+
+func ClassifyScoresUsingMap(scores []int) map[string]int {
+	counts := make(map[string]int) // Make an empty map
+	for _, s := range scores {
+		if s < 50 {
+			counts["Low"]++ // If "Low" doesn't exist, it starts at 0 automatically!
+		} else if s <= 79 { // Using <= ensures we don't accidentally miss exactly 79
+			counts["Medium"]++
+		} else {
+			counts["High"]++
+		}
+	}
+
+	// Returning the map that already has all your counts compiled instantly!
+	return counts
+}
 func main() {
 	fmt.Println("Run `go test` in this directory to see if your code passes!")
 }
