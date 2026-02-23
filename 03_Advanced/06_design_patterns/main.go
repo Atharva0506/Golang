@@ -24,8 +24,6 @@ func WithCache(c bool) DBOption {
 	}
 }
 
-// Bug Fix: You wrote `*DBOption` as the return type!
-// We are building and returning a Database pointer, not an Option pointer!
 func NewDatabase(url string, opts ...DBOption) *Database {
 	// 1. We build the struct with safe Default Values
 	db := &Database{
@@ -42,6 +40,6 @@ func NewDatabase(url string, opts ...DBOption) *Database {
 	return db
 }
 func main() {
-	db := NewDatabase("postgres://localhost:5432", WithCache(true))
+	db := NewDatabase("postgres://localhost:5432", WithCache(true), WithTimeout(77))
 	fmt.Printf("%+v\n", db)
 }
