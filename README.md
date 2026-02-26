@@ -38,12 +38,17 @@ The learning path is divided into three main sections:
 
 ### 🔴 03 Advanced (Production Ready)
 * 01_context
-* 02_testing_and_benchmarking
-* 03_reflection
-* 04_cgo
-* 05_design_patterns
-* 06_concurrency_patterns
-* 07_database_sql
+* 02_pointers
+* 03_buffers
+* 04_interfaces_advanced
+* 05_reflection
+* 06_design_patterns
+* 07_concurrency_patterns
 * 08_middleware
-* 09_grpc
-* 10_websockets
+* 09_database_sql
+* 10_testing_mocks
+* 11_benchmarking
+* 12_graceful_shutdown
+* 13_websockets
+* 14_grpc
+* 15_cgo
