@@ -19,12 +19,3 @@ This module contains the final step of the Go mastery journey. Here you will fin
 * **`13_websockets`**: Persistent, bidirectional TCP communication for live-chat and dashboards using `gorilla/websocket`.
 * **`14_grpc`**: High-performance, binary-compressed Server-to-Server RPC communication with Protobufs.
 * **`15_cgo`**: Calling native C code (like SQLite or FFmpeg) directly from inside Go files.
-
-## 16_final_project Overview
-The `16_final_project` is the culmination of this roadmap. It demonstrates a production-ready application featuring:
-1. **Dependency Injection & Mocks** for the Database layer.
-2. **Context** timeouts to prevent long-running queries.
-3. **Graceful Shutdowns** to ensure no HTTP requests die mid-flight.
-4. **Middleware** for request logging.
-5. **Concurrency** for background processing (e.g. sending emails asynchronously).
-6. **Robust Testing**, where independent components are verified individually (Unit) and together (Integration).

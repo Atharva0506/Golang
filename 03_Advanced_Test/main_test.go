@@ -2,77 +2,115 @@ package main
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 	"time"
 )
 
-// MockStore implements the interface the user built so we can test their ProcessAll function!
-type MockStore struct {
-	Messages []string
-	Err      error
+// Mock implementation of the Notifier interface for testing!
+type MockNotifier struct {
+	Count int32
 }
 
-func (m *MockStore) FetchMessages(limit int) ([]string, error) {
-	if m.Err != nil {
-		return nil, m.Err
-	}
-	if limit > len(m.Messages) {
-		limit = len(m.Messages)
-	}
-	return m.Messages[:limit], nil
-}
-
-func (m *MockStore) MarkAsProcessed(id int) error {
-	return nil
-}
-
-// Task 1 & 2 Test
-func TestEventProcessor_Architecture(t *testing.T) {
-	mockDB := &MockStore{
-		Messages: []string{"A", "B", "C"},
-	}
-
-	// This automatically checks if the user built `NewEventProcessor` and `WithWorkers` correctly!
-	processor := NewEventProcessor(mockDB, WithWorkers(5))
-
-	if processor == nil {
-		t.Fatalf("Expected NewEventProcessor to return a pointer, got nil")
-	}
-
-	if processor.maxWorkers != 5 {
-		t.Errorf("Expected maxWorkers to be 5 via Functional Options, got %d", processor.maxWorkers)
-	}
-
-	if processor.store == nil {
-		t.Errorf("Expected store to be set, got nil")
+func (m *MockNotifier) Notify(ctx context.Context, u *User) error {
+	// Simulate work
+	select {
+	case <-time.After(10 * time.Millisecond):
+		atomic.AddInt32(&m.Count, 1)
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }
 
-// Task 3 Test
-func TestEventProcessor_ProcessAll_ContextTimeout(t *testing.T) {
-	mockDB := &MockStore{
-		// We send 10 messages
-		Messages: []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"},
-	}
+// Test Pipeline
+func TestAdvancedPipeline(t *testing.T) {
+	// --- TASK 1: Pointers & Buffers ---
+	t.Run("Task 1: AllocateUserBatch", func(t *testing.T) {
+		batch := AllocateUserBatch(100)
+		if batch == nil {
+			t.Fatalf("Task 1 Failed: Returned nil")
+		}
+		if cap(*batch) != 100 {
+			t.Errorf("Task 1 Failed: Expected capacity 100, got %d. Did you use make() correctly?", cap(*batch))
+		}
+	})
 
-	processor := NewEventProcessor(mockDB)
+	// --- TASK 2 & 3: Interfaces, Mocks, and Functional Options ---
+	t.Run("Task 2 & 3: Architecture", func(t *testing.T) {
+		mock := &MockNotifier{}
+		svc := NewNotificationService(mock, WithWorkers(5))
 
-	// We only give the context 10 milliseconds to live!
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
-	defer cancel()
+		if svc == nil {
+			t.Fatalf("Task 3 Failed: Returned nil service")
+		}
+		if svc.workerCount != 5 {
+			t.Errorf("Task 3 Failed: Expected workerCount 5, got %d", svc.workerCount)
+		}
+	})
 
-	// But wait! We will spawn a goroutine that artificially sleeps during `ProcessAll`
-	// so it forces Context to time out before it can finish all 10 messages!
-	// (Users will need to ensure they have the `select { case <-ctx.Done(): ... }` logic)
+	// --- TASK 4: Context & Concurrency ---
+	t.Run("Task 4: Concurrency and Timeout", func(t *testing.T) {
+		mock := &MockNotifier{}
+		svc := NewNotificationService(mock, WithWorkers(5))
 
-	err := processor.ProcessAll(ctx, 10)
+		users := []*User{{ID: 1}, {ID: 2}, {ID: 3}}
 
-	// If the user didn't check `ctx.Done()`, it will finish processing all of them instead of returning instantly!
-	if err == nil {
-		t.Errorf("Expected ProcessAll to fail with a Context Timeout Error, but it succeeded!")
-	}
+		// Force a timeout
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Millisecond)
+		defer cancel()
 
-	if err != context.DeadlineExceeded && err.Error() != "context deadline exceeded" {
-		t.Errorf("Expected context deadline exceeded error, got %v", err)
+		err := svc.ProcessUsers(ctx, users)
+		if err == nil {
+			t.Errorf("Task 4 Failed: Expected context timeout error, but got nil")
+		}
+	})
+
+	// --- TASK 5: Reflection ---
+	t.Run("Task 5: Reflection", func(t *testing.T) {
+		tags := ExtractDBTags(User{})
+		if len(tags) != 2 || tags[0] != "primary_key" || tags[1] != "email_address" {
+			t.Errorf("Task 5 Failed: Failed to extract struct tags correctly using reflection")
+		}
+	})
+
+	// --- TASK 6: Middleware ---
+	t.Run("Task 6: Middleware", func(t *testing.T) {
+		nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
+		mw := RequestLogger(nextHandler)
+
+		if mw == nil {
+			t.Fatalf("Task 6 Failed: Middleware returned nil")
+		}
+
+		req := httptest.NewRequest("GET", "/", nil)
+		rec := httptest.NewRecorder()
+
+		mw.ServeHTTP(rec, req)
+
+		if rec.Header().Get("X-Middleware-Applied") != "true" {
+			t.Errorf("Task 6 Failed: Header not applied by middleware")
+		}
+	})
+
+	// --- TASK 8: Graceful Shutdown ---
+	t.Run("Task 8: OS Signals", func(t *testing.T) {
+		ch := SetupShutdownChannel()
+		if ch == nil {
+			t.Fatalf("Task 8 Failed: Channel is nil")
+		}
+		if cap(ch) == 0 {
+			t.Errorf("Task 8 Failed: OS Signal channel should be buffered!")
+		}
+	})
+}
+
+// --- TASK 11: Benchmarking ---
+// We write the benchmark here so the user can run `go test -bench=.`
+func BenchmarkAllocateUserBatch(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = AllocateUserBatch(100)
 	}
 }
