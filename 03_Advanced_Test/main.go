@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"net/http"
 	"os"
+	"os/signal"
+	"reflect"
+	"sync"
 )
 
 // =========================================================================
@@ -25,7 +28,8 @@ type User struct {
 // You MUST pre-allocate the slice's capacity using `make` to prevent memory reallocation!
 func AllocateUserBatch(size int) *[]*User {
 	// TODO: Implement
-	return nil
+	user := make([]*User, 0, size)
+	return &user
 }
 
 // -------------------------------------------------------------------------
@@ -34,6 +38,7 @@ func AllocateUserBatch(size int) *[]*User {
 // Create an interface 'Notifier' with a single method: `Notify(ctx context.Context, u *User) error`
 type Notifier interface {
 	// TODO: Define the method
+	Notify(ctx context.Context, u *User) error
 }
 
 // -------------------------------------------------------------------------
@@ -49,12 +54,22 @@ type Option func(*NotificationService)
 
 func WithWorkers(count int) Option {
 	// TODO: Implement
-	return nil
+	return func(ns *NotificationService) {
+		ns.workerCount = count
+	}
 }
 
 func NewNotificationService(n Notifier, opts ...Option) *NotificationService {
 	// TODO: Implement (default workerCount to 1)
-	return nil
+
+	notificaion := &NotificationService{
+		notifier:    n,
+		workerCount: 1,
+	}
+	for _, optFunc := range opts {
+		optFunc(notificaion)
+	}
+	return notificaion
 }
 
 // -------------------------------------------------------------------------
@@ -67,6 +82,41 @@ func NewNotificationService(n Notifier, opts ...Option) *NotificationService {
 // 4. If the context expires, it must stop processing and return context.DeadlineExceeded.
 func (s *NotificationService) ProcessUsers(ctx context.Context, users []*User) error {
 	// TODO: Implement worker pool and context cancellations
+	userChan := make(chan *User)
+	var wg sync.WaitGroup
+	wg.Add(s.workerCount)
+	for i := 0; i < s.workerCount; i++ {
+		go func() {
+			defer wg.Done()
+			for user := range userChan {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+					s.notifier.Notify(ctx, user)
+				}
+			}
+		}()
+	}
+
+	// 2. Outside the loop, we send the workload to the workers!
+	for _, user := range users {
+		select {
+		case <-ctx.Done():
+			close(userChan)
+			wg.Wait()
+			return context.DeadlineExceeded
+		case userChan <- user:
+		}
+	}
+
+	// 3. We are done sending data. Close the channel and wait for the workers to finish actively processing.
+	close(userChan)
+	wg.Wait()
+
+	if ctx.Err() != nil {
+		return context.DeadlineExceeded
+	}
 	return nil
 }
 
@@ -77,7 +127,13 @@ func (s *NotificationService) ProcessUsers(ctx context.Context, users []*User) e
 // It must read the struct tags defined as `db:"..."` on any struct passed to it and return them as a slice of strings.
 func ExtractDBTags(s interface{}) []string {
 	// TODO: Implement reflection
-	return nil
+	var data []string
+	t := reflect.TypeOf(s)
+
+	for i := 0; i < t.NumField(); i++ {
+		data = append(data, t.Field(i).Tag.Get("db"))
+	}
+	return data
 }
 
 // -------------------------------------------------------------------------
@@ -87,7 +143,11 @@ func ExtractDBTags(s interface{}) []string {
 // It should set a custom HTTP Header "X-Middleware-Applied: true" before calling the next handler.
 func RequestLogger(next http.Handler) http.Handler {
 	// TODO: Implement middleware decorator
-	return nil
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Middleware-Applied", "true")
+		next.ServeHTTP(w, r)
+	})
 }
 
 // -------------------------------------------------------------------------
@@ -97,6 +157,11 @@ func RequestLogger(next http.Handler) http.Handler {
 // It must execute a mock INSERT statement using the passed transaction. Do NOT commit or rollback here!
 func SaveUserSafe(tx *sql.Tx, u *User) error {
 	// TODO: Execute an INSERT using tx.Exec
+	_, err := tx.Exec("INSERT INTO users (id,email) VALUES(?,?)", u.ID, u.Email)
+
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -107,7 +172,10 @@ func SaveUserSafe(tx *sql.Tx, u *User) error {
 // It must create a buffered channel, map it to `os.Interrupt`, and return it.
 func SetupShutdownChannel() chan os.Signal {
 	// TODO: Implement OS signal routing
-	return nil
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+
+	return quit
 }
 
 func main() {
