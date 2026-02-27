@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package pb;
+option go_package = "internal/delivery/grpc/pb";
+
+// TODO: Protobuf Service Definitions
+// Responsibilities:
+// - Define binary-compatible RPC methods for Microservice-to-Microservice communication
+// - Define exact Request and Response message types

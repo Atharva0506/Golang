@@ -1,0 +1,15 @@
+version: '3.8'
+
+# TODO: Local development orchestration
+# Responsibilities:
+# - Spin up the Go API backend instance using the local Dockerfile
+# - Spin up a Background Worker instance
+# - Spin up supporting databases (PostgreSQL)
+# - Spin up supporting message brokers or caches (Redis / RabbitMQ)
+# - Ensure network aliases allow them to securely intercommunicate
+
+services:
+  # api:
+  # worker:
+  # db:
+  # cache:
