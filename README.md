@@ -62,6 +62,11 @@ A massive, production-grade integration test assignment covering Pointers, Inter
 
 ---
 
+### 🚀 04 Production Project
+A complete, production-ready "Clean Architecture" Golang backend skeleton. It includes decoupled layers (Delivery, Service, Repository), Docker infrastructure, JWT authentication boundaries, WebSockets, background workers, and PostgreSQL integrations.
+
+---
+
 ## 💡 How to Check the Solutions!
 
 Throughout this learning path, you will find interactive `.go` assignments inside the `_Test` directories where you must write the implementation to make the `go test -v` script pass.
