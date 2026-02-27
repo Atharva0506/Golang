@@ -23,6 +23,8 @@ The learning path is divided into three main sections:
 * 14_defer
 * 15_files
 
+### 📝 01_Beginner_Test
+Interactive programming assignments to practice Beginner Go concepts.
 ### 🟡 02 Intermediate (Structuring Applications)
 * 01_interfaces
 * 02_error_handling
@@ -36,6 +38,8 @@ The learning path is divided into three main sections:
 * 10_modules
 * 11_building_api
 
+### 📝 02_Intermediate_Test
+Interactive programming assignments to practice Intermediate Go concepts (WaitGroups, Mutexes, Interfaces).
 ### 🔴 03 Advanced (Production Ready)
 * 01_context
 * 02_pointers
@@ -52,3 +56,26 @@ The learning path is divided into three main sections:
 * 13_websockets
 * 14_grpc
 * 15_cgo
+
+### 📝 03_Advanced_Test
+A massive, production-grade integration test assignment covering Pointers, Interfaces, Reflection, Design Patterns, Worker Pools, Middleware, SQL, and OS Signals.
+
+---
+
+## 💡 How to Check the Solutions!
+
+Throughout this learning path, you will find interactive `.go` assignments inside the `_Test` directories where you must write the implementation to make the `go test -v` script pass.
+
+If you get stuck or want to see the correct Go Senior Engineer implementation for **any** of the tests, the completed code is permanently saved to the `solution` branch!
+
+To view the solutions, open your terminal and run:
+```bash
+# Switch to the solutions branch
+git checkout solution
+```
+
+To go back to your own code (or the blank assignments) run:
+```bash
+# Switch back to the main branch
+git checkout main
+```
