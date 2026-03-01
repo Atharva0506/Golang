@@ -1,7 +1,9 @@
 # Production-Grade Golang Backend Architecture
 
 ## Overview
-This repository contains a skeleton for a highly scalable, production-ready backend system written in Go. It enforces **Clean Architecture** principles, prioritizing modularity, extreme testability, and strict separation of concerns.
+This repository contains a production-ready Go backend system that implements **both a Microservice Authentication Provider and a High-Frequency Trading & Notification Bot.** 
+
+Built by Atharva Naik alongside a Senior Go Engineer, it enforces **Clean Architecture** principles. The goal is modularity, pristine domain isolation, strict testability, and standard Go production-grade naming conventions.
 
 ## Features
 - **Protocols Supported**: REST APIs, gRPC Services, WebSockets
