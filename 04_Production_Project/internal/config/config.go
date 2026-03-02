@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -39,6 +40,18 @@ type DatabaseConfig struct {
 	MaxLifetime  time.Duration `yaml:"max_lifetime"`
 }
 
+func (d DatabaseConfig) DSN() string {
+	return fmt.Sprintf(
+		"%s://%s:%s@%s:%d/%s?sslmode=disable",
+		d.Driver,
+		d.User,
+		d.Password,
+		d.Host,
+		d.Port,
+		d.Name,
+	)
+}
+
 type JWTConfig struct {
 	Secret        string        `yaml:"secret"`
 	AccessExpiry  time.Duration `yaml:"access_expiry"`
@@ -50,7 +63,7 @@ type LoggerConfig struct {
 	Format string `yaml:"format"`
 }
 
-func MustLoad() (*Config, error) {
+func MustLoad() *Config {
 	data, err := os.ReadFile("config.yaml")
 	if err != nil {
 		panic(err)
@@ -70,6 +83,6 @@ func MustLoad() (*Config, error) {
 		cfg.JWT.Secret = jwtSecret
 	}
 
-	return &cfg, nil
+	return &cfg
 
 }
