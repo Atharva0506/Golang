@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Atharva0506/trading_bot/internal/config"
+	delivery "github.com/Atharva0506/trading_bot/internal/delivery/http"
 	"github.com/Atharva0506/trading_bot/pkg/database"
 	"github.com/Atharva0506/trading_bot/pkg/logger"
 )
@@ -27,11 +28,13 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
+	router := delivery.NewRouter()
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
+		Handler:      router,
 	}
 
 	go func() {

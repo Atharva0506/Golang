@@ -1,7 +1,14 @@
 package http
 
-// TODO: HTTP Router registration
-// Responsibilities:
-// - Group application routes by domain (e.g., /api/v1/users)
-// - Attach specific Middleware to specific groups (e.g., Auth required for /me)
-// - Initialize lightweight multiplexer (like Chi or standard `net/http`)
+import (
+	"github.com/Atharva0506/trading_bot/internal/middleware"
+	"github.com/go-chi/chi/v5"
+)
+
+func NewRouter() *chi.Mux {
+	r := chi.NewRouter()
+	r.Use(middleware.RequestLogger)
+
+	r.Get("/health", healthHandler)
+	return r
+}

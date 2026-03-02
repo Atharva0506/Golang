@@ -10,10 +10,10 @@ server:
 
 database:
   host: "localhost"
-  port: 5432
-  user: "postgres"
-  password: ""
-  name: "mydb"
+  port: 5433
+  user: "testuser"
+  password: "testpassword"
+  name: "project_db"
   driver: "postgres"
   max_open_connections: 25
   max_idle_connections: 5
