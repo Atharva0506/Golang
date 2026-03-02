@@ -9,10 +9,20 @@ server:
   write_timeout: 10s
 
 database:
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: ""
+  name: "mydb"
   driver: "postgres"
   max_open_connections: 25
   max_idle_connections: 5
   max_lifetime: 5m
+
+jwt:
+  secret: "super-secret"
+  access_expiry: 15m
+  refresh_expiry: 24h
 
 logger:
   level: "info"
