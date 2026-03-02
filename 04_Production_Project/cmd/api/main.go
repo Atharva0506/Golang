@@ -1,14 +1,57 @@
 package main
 
-// TODO: Entry point for the REST, gRPC, and WebSocket APIs.
-// Responsibilities:
-// - Load environment configs (config.yaml, .env)
-// - Initialize structured logging (pkg/logger)
-// - Setup database connection pooling (pkg/database)
-// - Initialize dependency injection container (internal/di)
-// - Register HTTP middlewares (Rate Limiting, Auth, Context, Logging)
-// - Start the HTTP server, gRPC server, and WebSocket hub
-// - Listen for OS signals (SIGINT, SIGTERM) to trigger graceful shutdown
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/Atharva0506/trading_bot/internal/config"
+	"github.com/Atharva0506/trading_bot/pkg/database"
+	"github.com/Atharva0506/trading_bot/pkg/logger"
+)
+
 func main() {
-	// Implementation goes here
+	cfg := config.MustLoad()
+
+	log := logger.NewLogger(&cfg.Logger)
+	slog.SetDefault(log)
+
+	db, err := database.NewConnection(&cfg.Database)
+	if err != nil {
+		slog.Error("failed to connect to database", "error", err)
+		os.Exit(1)
+	}
+	defer db.Close()
+
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+	}
+
+	go func() {
+		slog.Info("server starting", "port", cfg.Server.Port)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("server failed", "error", err)
+			os.Exit(1)
+		}
+	}()
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
+	slog.Info("shutdown signal received")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		slog.Error("server shutdown failed", "error", err)
+	}
+
+	slog.Info("server exited properly")
+
 }
