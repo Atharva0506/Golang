@@ -12,13 +12,13 @@ import (
 
 	"github.com/Atharva0506/trading_bot/internal/config"
 	delivery "github.com/Atharva0506/trading_bot/internal/delivery/http"
+	"github.com/Atharva0506/trading_bot/internal/di"
 	"github.com/Atharva0506/trading_bot/pkg/database"
 	"github.com/Atharva0506/trading_bot/pkg/logger"
 )
 
 func main() {
 	cfg := config.MustLoad()
-
 	log := logger.NewLogger(&cfg.Logger)
 	slog.SetDefault(log)
 
@@ -28,7 +28,16 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
-	router := delivery.NewRouter()
+
+	if err := database.RunMigrations(db, "migrations"); err != nil {
+		slog.Error("failed to run database migrations", "error", err)
+		os.Exit(1)
+	}
+
+	c := di.NewContainer(db, cfg)
+
+	// TODO: Pass the UserHandler and config to the Router
+	router := delivery.NewRouter(c.UserHandler, cfg)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
