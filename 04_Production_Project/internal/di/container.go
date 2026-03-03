@@ -17,7 +17,8 @@ import (
 // ============================================================================
 
 type Container struct {
-	UserHandler *delivery.UserHandler
+	UserHandler   *delivery.UserHandler
+	SignalHandler *delivery.SignalHandler
 }
 
 func NewContainer(db *sql.DB, cfg *config.Config) *Container {
@@ -25,8 +26,12 @@ func NewContainer(db *sql.DB, cfg *config.Config) *Container {
 	userService := service.NewUserService(userRepo, cfg.JWT.Secret, cfg.JWT.AccessExpiry, cfg.JWT.RefreshExpiry)
 
 	userHandler := delivery.NewUserHandler(userService)
+	signalRepo := postgres.NewSignalPostgresRepo(db)
+	signalService := service.NewSignalService(signalRepo)
+	signalHandler := delivery.NewSignalHandler(signalService)
 
 	return &Container{
-		UserHandler: userHandler,
+		UserHandler:   userHandler,
+		SignalHandler: signalHandler,
 	}
 }

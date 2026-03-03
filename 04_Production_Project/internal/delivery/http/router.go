@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func NewRouter(userHandler *UserHandler, cfg *config.Config) *chi.Mux {
+func NewRouter(userHandler *UserHandler, signalHandler *SignalHandler, cfg *config.Config) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestLogger)
 
@@ -28,5 +28,12 @@ func NewRouter(userHandler *UserHandler, cfg *config.Config) *chi.Mux {
 		})
 	})
 
+	r.Route("/api/v1/signals", func(r chi.Router) {
+		r.Use(middleware.JWTAuth(cfg.JWT.Secret))
+		r.Post("/", signalHandler.CreateSignal)
+		r.Get("/", signalHandler.GetAllSignals)
+		r.Get("/{symbol}", signalHandler.GetSignalsBySymbol)
+
+	})
 	return r
 }

@@ -37,7 +37,7 @@ func main() {
 	c := di.NewContainer(db, cfg)
 
 	// TODO: Pass the UserHandler and config to the Router
-	router := delivery.NewRouter(c.UserHandler, cfg)
+	router := delivery.NewRouter(c.UserHandler, c.SignalHandler, cfg)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
