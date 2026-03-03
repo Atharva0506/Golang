@@ -11,8 +11,9 @@ import (
 
 func NewRouter(userHandler *UserHandler, signalHandler *SignalHandler, cfg *config.Config) *chi.Mux {
 	r := chi.NewRouter()
+	limter := middleware.NewIPRateLimiter(10, 20)
 	r.Use(middleware.RequestLogger)
-
+	r.Use(middleware.RateLimiter(limter))
 	r.Get("/health", healthHandler)
 
 	r.Route("/api/v1/auth", func(r chi.Router) {
