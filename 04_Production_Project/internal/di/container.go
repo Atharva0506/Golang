@@ -9,13 +9,6 @@ import (
 	"github.com/Atharva0506/trading_bot/internal/service"
 )
 
-// ============================================================================
-// STEP 4: Dependency Injection (DI) Container
-// ============================================================================
-// The container takes the top-level dependencies (DB connection, Config)
-// and wires all the layers together: DB -> Repo -> Service -> Handler
-// ============================================================================
-
 type Container struct {
 	UserHandler   *delivery.UserHandler
 	SignalHandler *delivery.SignalHandler
