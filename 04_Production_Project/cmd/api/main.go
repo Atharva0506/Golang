@@ -12,6 +12,7 @@ import (
 
 	"github.com/Atharva0506/trading_bot/internal/config"
 	delivery "github.com/Atharva0506/trading_bot/internal/delivery/http"
+	"github.com/Atharva0506/trading_bot/internal/delivery/websocket"
 	"github.com/Atharva0506/trading_bot/internal/di"
 	"github.com/Atharva0506/trading_bot/pkg/database"
 	"github.com/Atharva0506/trading_bot/pkg/logger"
@@ -36,8 +37,10 @@ func main() {
 
 	c := di.NewContainer(db, cfg)
 
-	// TODO: Pass the UserHandler and config to the Router
-	router := delivery.NewRouter(c.UserHandler, c.SignalHandler, cfg)
+	hub := websocket.NewHub()
+	go hub.Run()
+
+	router := delivery.NewRouter(c.UserHandler, c.SignalHandler, hub, cfg)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),

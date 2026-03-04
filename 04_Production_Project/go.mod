@@ -13,3 +13,5 @@ require (
 )
 
 require golang.org/x/time v0.14.0
+
+require github.com/gorilla/websocket v1.5.3

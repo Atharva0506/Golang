@@ -4,16 +4,19 @@ import (
 	"net/http"
 
 	"github.com/Atharva0506/trading_bot/internal/config"
+	"github.com/Atharva0506/trading_bot/internal/delivery/websocket"
 	"github.com/Atharva0506/trading_bot/internal/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
-func NewRouter(userHandler *UserHandler, signalHandler *SignalHandler, cfg *config.Config) *chi.Mux {
+// NewRouter creates and configures the application router with all routes.
+func NewRouter(userHandler *UserHandler, signalHandler *SignalHandler, hub *websocket.Hub, cfg *config.Config) *chi.Mux {
 	r := chi.NewRouter()
-	limter := middleware.NewIPRateLimiter(10, 20)
+	limiter := middleware.NewIPRateLimiter(10, 20)
 	r.Use(middleware.RequestLogger)
-	r.Use(middleware.RateLimiter(limter))
+	r.Use(middleware.RateLimiter(limiter))
+
 	r.Get("/health", healthHandler)
 
 	r.Route("/api/v1/auth", func(r chi.Router) {
@@ -34,7 +37,11 @@ func NewRouter(userHandler *UserHandler, signalHandler *SignalHandler, cfg *conf
 		r.Post("/", signalHandler.CreateSignal)
 		r.Get("/", signalHandler.GetAllSignals)
 		r.Get("/{symbol}", signalHandler.GetSignalsBySymbol)
-
 	})
+
+	r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+		websocket.ServeWs(hub, w, r)
+	})
+
 	return r
 }
