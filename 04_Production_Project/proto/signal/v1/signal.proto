@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package signal.v1;
+
+option go_package = "github.com/Atharva0506/trading_bot/proto/signal/v1;signalpb";
+
+import "google/protobuf/timestamp.proto";
+
+// SignalService provides gRPC endpoints for trade signal operations.
+service SignalService {
+  // CreateSignal creates a new trade signal.
+  rpc CreateSignal(CreateSignalRequest) returns (CreateSignalResponse);
+
+  // GetSignals retrieves all trade signals.
+  rpc GetSignals(GetSignalsRequest) returns (GetSignalsResponse);
+
+  // GetSignalsBySymbol retrieves signals filtered by trading symbol.
+  rpc GetSignalsBySymbol(GetSignalsBySymbolRequest) returns (GetSignalsResponse);
+}
+
+// Signal represents a single trade signal.
+message Signal {
+  string id = 1;
+  string symbol = 2;
+  string action = 3;
+  uint64 price = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+message CreateSignalRequest {
+  string symbol = 1;
+  string action = 2;
+  uint64 price = 3;
+}
+
+message CreateSignalResponse {
+  Signal signal = 1;
+}
+
+message GetSignalsRequest {}
+
+message GetSignalsBySymbolRequest {
+  string symbol = 1;
+}
+
+message GetSignalsResponse {
+  repeated Signal signals = 1;
+}

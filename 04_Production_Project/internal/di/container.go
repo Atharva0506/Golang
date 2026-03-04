@@ -19,6 +19,7 @@ import (
 type Container struct {
 	UserHandler   *delivery.UserHandler
 	SignalHandler *delivery.SignalHandler
+	SignalService *service.SignalService
 }
 
 func NewContainer(db *sql.DB, cfg *config.Config) *Container {
@@ -33,5 +34,6 @@ func NewContainer(db *sql.DB, cfg *config.Config) *Container {
 	return &Container{
 		UserHandler:   userHandler,
 		SignalHandler: signalHandler,
+		SignalService: signalService,
 	}
 }
