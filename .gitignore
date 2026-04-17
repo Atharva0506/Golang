@@ -1,1 +1,8 @@
 *.db
+
+# Compiled binaries
+bin/
+intermediate_test
+tracing_demo
+cli_app
+advanced_test_2
