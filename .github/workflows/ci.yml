@@ -12,7 +12,13 @@ permissions:
 
 jobs:
   # -----------------------------------------------------------------------
-  # Job 1: Lint & vet all Go modules in the repository
+  # Lint & test the production project.
+  #
+  # Student _Test assignment directories (02_Intermediate_Test,
+  # 03_Advanced_Test, 04_Advanced_Test) are intentionally excluded:
+  # their test files reference stub functions that students must implement,
+  # so go vet and go test are expected to fail on those directories until
+  # a student fills in the TODOs.
   # -----------------------------------------------------------------------
   lint:
     name: Lint
@@ -25,28 +31,13 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.23"   # Latest stable — modules pin their own version
-          cache: true
-
-      - name: go vet — Intermediate Test
-        working-directory: 02_Intermediate_Test
-        run: go vet ./...
-
-      - name: go vet — Advanced Test
-        working-directory: 03_Advanced_Test
-        run: go vet ./...
-
-      - name: go vet — Advanced Test 2
-        working-directory: 04_Advanced_Test
-        run: go vet ./...
+          go-version: "1.23"
+          cache: false
 
       - name: go vet — Production Project
         working-directory: 04_Production_Project
         run: go vet ./...
 
-  # -----------------------------------------------------------------------
-  # Job 2: Run all test suites
-  # -----------------------------------------------------------------------
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -60,27 +51,12 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.23"
-          cache: true
-
-      - name: Test — Intermediate Test
-        working-directory: 02_Intermediate_Test
-        run: go test -v -race ./...
-
-      - name: Test — Advanced Test
-        working-directory: 03_Advanced_Test
-        run: go test -v -race ./...
-
-      - name: Test — Advanced Test 2
-        working-directory: 04_Advanced_Test
-        run: go test -v -race ./...
+          cache: false
 
       - name: Test — Production Project (unit tests only)
         working-directory: 04_Production_Project
         run: go test -v -race -short ./...
 
-  # -----------------------------------------------------------------------
-  # Job 3: Verify the production project Docker image builds
-  # -----------------------------------------------------------------------
   docker-build:
     name: Docker Build
     runs-on: ubuntu-latest
