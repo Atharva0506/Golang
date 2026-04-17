@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main, solution]
+  pull_request:
+    branches: [main]
+
+# Restrict the default GITHUB_TOKEN to read-only access.
+permissions:
+  contents: read
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Lint & test the production project.
+  #
+  # Student _Test assignment directories (02_Intermediate_Test,
+  # 03_Advanced_Test, 04_Advanced_Test) are intentionally excluded:
+  # their test files reference stub functions that students must implement,
+  # so go vet and go test are expected to fail on those directories until
+  # a student fills in the TODOs.
+  # -----------------------------------------------------------------------
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: false
+
+      - name: go vet — Production Project
+        working-directory: 04_Production_Project
+        run: go vet ./...
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: lint
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: false
+
+      - name: Test — Production Project (unit tests only)
+        working-directory: 04_Production_Project
+        run: go test -v -race -short ./...
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        working-directory: 04_Production_Project
+        run: docker build --target runner -t trading-bot:ci .

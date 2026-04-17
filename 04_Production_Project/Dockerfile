@@ -1,12 +1,29 @@
-# TODO: Multi-stage Docker deployment
-# Responsibilities:
-# - Stage 1 (Builder): Use golang:1.21-alpine, download dependencies, and compile the binary cleanly
-# - Stage 2 (Runner): Use scratch or alpine base to keep image size < 20MB
-# - Expose necessary REST, gRPC, and WebSocket ports
-# - Define the ENTRYPOINT to execute the compiled binary
+# Stage 1 — Builder: download dependencies and compile the API binary
+FROM golang:1.24-alpine AS builder
 
-FROM golang:1.21-alpine AS builder
-# Implementation goes here
+WORKDIR /app
 
-FROM scratch
-# Implementation goes here
+# Download modules first so this layer is cached when only source changes
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the rest of the source and build a statically-linked binary
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /app/api ./cmd/api
+
+# Stage 2 — Runner: minimal scratch image; certs are copied from the builder
+# (golang:1.24-alpine ships ca-certificates so no extra apk step is needed)
+FROM scratch AS runner
+
+# TLS root certificates for outbound HTTPS calls
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+WORKDIR /app
+COPY --from=builder /app/api ./api
+
+# REST / WebSocket
+EXPOSE 8080
+# gRPC
+EXPOSE 50051
+
+ENTRYPOINT ["./api"]
