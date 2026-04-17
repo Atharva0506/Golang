@@ -1,0 +1,3 @@
+Hello from an embedded file!
+This content is compiled directly into the Go binary.
+No external file reads are needed at runtime.

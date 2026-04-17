@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"regexp"
 )
 
 // Task 1: Interfaces and Custom Errors
@@ -38,6 +41,83 @@ import (
 // 5. Use json.NewEncoder to encode and send the response.
 // 6. Create a function 'SetupRouter() *http.ServeMux'. Inside to create a new Mux (`mux := http.NewServeMux()`)
 //    and register the route "GET /status" to your StatusHandler. Return the `mux`!
+
+// Task 5: Regular Expressions (12_regex)
+// 1. Create a function 'ExtractEmails(text string) []string'.
+//    - Compile a regular expression that matches email addresses.
+//    - Return ALL matching email addresses found in 'text' using FindAllString.
+//    - Return nil if no emails are found.
+//
+// 2. Create a function 'RedactEmails(text string) string'.
+//    - Replace every email address in 'text' with the literal string "[REDACTED]".
+//    - Return the redacted string.
+//
+// 3. Create a function 'IsValidPhone(phone string) bool'.
+//    - Return true if 'phone' matches the pattern: optional "+1 ", then 10 digits
+//      formatted as NXX-NXX-XXXX where N is 2-9.
+//    - Use the pattern: `^\+?1?\s?\(?[2-9]\d{2}\)?[\s\-]?[2-9]\d{2}\-\d{4}$`
+
+func ExtractEmails(text string) []string {
+	// TODO: Implement
+	return nil
+}
+
+func RedactEmails(text string) string {
+	// TODO: Implement
+	return text
+}
+
+func IsValidPhone(phone string) bool {
+	// TODO: Implement
+	return false
+}
+
+// Task 6: HTTP Client (13_http_client)
+// 1. Create a function 'FetchURL(url string) (int, error)'.
+//    - Create an *http.Client with a 5-second timeout.
+//    - Perform a GET request to 'url'.
+//    - Return the HTTP status code and any error.
+//    - IMPORTANT: Always close resp.Body!
+//
+// 2. Create a function 'GetWithHeader(client *http.Client, url, headerKey, headerValue string) (int, error)'.
+//    - Build an *http.Request using http.NewRequest.
+//    - Set the custom header on the request.
+//    - Execute it with the provided client.
+//    - Return the status code and any error.
+
+func FetchURL(url string) (int, error) {
+	// TODO: Implement
+	return 0, nil
+}
+
+func GetWithHeader(client *http.Client, url, headerKey, headerValue string) (int, error) {
+	// TODO: Implement
+	return 0, nil
+}
+
+// Task 7: Environment Variables (14_environment_variables)
+// 1. Create a function 'GetEnvOrDefault(key, defaultValue string) string'.
+//    - Return the environment variable named 'key' if it is set and non-empty.
+//    - Otherwise return 'defaultValue'.
+//
+// 2. Create a function 'RequireEnv(key string) (string, error)'.
+//    - Use os.LookupEnv to check if 'key' is defined.
+//    - If it is NOT defined, return an error: fmt.Errorf("required env var %q is not set", key).
+//    - If it IS defined, return the value.
+
+func GetEnvOrDefault(key, defaultValue string) string {
+	// TODO: Implement
+	return defaultValue
+}
+
+func RequireEnv(key string) (string, error) {
+	// TODO: Implement
+	return "", nil
+}
+
+// suppress unused import errors until students implement the tasks
+var _ = regexp.MustCompile
+var _ = os.Getenv
 
 func main() {
 	fmt.Println("Good luck! Run `go test -v` in this directory to check your answers.")

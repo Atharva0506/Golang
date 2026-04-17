@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main, solution]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Job 1: Lint & vet all Go modules in the repository
+  # -----------------------------------------------------------------------
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"   # Latest stable — modules pin their own version
+          cache: true
+
+      - name: go vet — Intermediate Test
+        working-directory: 02_Intermediate_Test
+        run: go vet ./...
+
+      - name: go vet — Advanced Test
+        working-directory: 03_Advanced_Test
+        run: go vet ./...
+
+      - name: go vet — Advanced Test 2
+        working-directory: 04_Advanced_Test
+        run: go vet ./...
+
+      - name: go vet — Production Project
+        working-directory: 04_Production_Project
+        run: go vet ./...
+
+  # -----------------------------------------------------------------------
+  # Job 2: Run all test suites
+  # -----------------------------------------------------------------------
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - name: Test — Intermediate Test
+        working-directory: 02_Intermediate_Test
+        run: go test -v -race ./...
+
+      - name: Test — Advanced Test
+        working-directory: 03_Advanced_Test
+        run: go test -v -race ./...
+
+      - name: Test — Advanced Test 2
+        working-directory: 04_Advanced_Test
+        run: go test -v -race ./...
+
+      - name: Test — Production Project (unit tests only)
+        working-directory: 04_Production_Project
+        run: go test -v -race -short ./...
+
+  # -----------------------------------------------------------------------
+  # Job 3: Verify the production project Docker image builds
+  # -----------------------------------------------------------------------
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        working-directory: 04_Production_Project
+        run: docker build --target runner -t trading-bot:ci .

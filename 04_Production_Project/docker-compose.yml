@@ -1,15 +1,111 @@
 version: '3.8'
 
-# TODO: Local development orchestration
-# Responsibilities:
-# - Spin up the Go API backend instance using the local Dockerfile
-# - Spin up a Background Worker instance
-# - Spin up supporting databases (PostgreSQL)
-# - Spin up supporting message brokers or caches (Redis / RabbitMQ)
-# - Ensure network aliases allow them to securely intercommunicate
-
 services:
-  # api:
-  # worker:
-  # db:
-  # cache:
+  # -----------------------------------------------------------------------
+  # PostgreSQL — primary data store
+  # -----------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: project_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d project_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -----------------------------------------------------------------------
+  # Redis — optional cache / session store
+  # -----------------------------------------------------------------------
+  cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # -----------------------------------------------------------------------
+  # API Server
+  # -----------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_PASSWORD: testpassword
+      JWT_SECRET: super-secret-dev-only
+    ports:
+      - "8080:8080"  # HTTP / WebSocket
+      - "9090:9090"  # gRPC
+      - "6060:6060"  # pprof
+
+  # -----------------------------------------------------------------------
+  # Background Worker
+  # -----------------------------------------------------------------------
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_PASSWORD: testpassword
+      JWT_SECRET: super-secret-dev-only
+
+  # -----------------------------------------------------------------------
+  # Prometheus — metrics collection
+  # Scrapes the API's /debug/vars endpoint via the expvar exporter
+  # -----------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    restart: unless-stopped
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+
+  # -----------------------------------------------------------------------
+  # Grafana — metrics visualisation
+  # Default credentials: admin / admin
+  # -----------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.4.2
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+
