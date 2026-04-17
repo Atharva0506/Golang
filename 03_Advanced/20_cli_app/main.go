@@ -72,15 +72,6 @@ func initConfig(cmd *cobra.Command) {
 		viper.AddConfigPath("$HOME/.trading-bot")
 	}
 
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-	} else {
-		viper.SetConfigName("config")
-		viper.SetConfigType("yaml")
-		viper.AddConfigPath(".")
-		viper.AddConfigPath("$HOME/.trading-bot")
-	}
-
 	// Viper automatically reads environment variables when you set a prefix.
 	// e.g., TRADING_SERVER=http://prod:8080 will override the "server" config key.
 	viper.SetEnvPrefix("TRADING")

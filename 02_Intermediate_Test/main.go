@@ -116,7 +116,7 @@ func RequireEnv(key string) (string, error) {
 }
 
 // suppress unused import errors until students implement the tasks
-var _ = regexp.MustCompile
+var _ = regexp.MustCompile(`.*`)
 var _ = os.Getenv
 
 func main() {
