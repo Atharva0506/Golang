@@ -99,6 +99,11 @@ Production patterns used by senior engineers at scale:
 
 ---
 
+### smart-contract
+go Lang gin REST apis for english auction smart contract
+
+---
+
 ## 💡 How to Check the Solutions!
 
 Throughout this learning path, you will find interactive `.go` assignments inside the `_Test` directories where you must write the implementation to make the `go test -v` script pass.
